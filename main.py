@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
 import telegram
 import json
-import os
 
-TOKEN = os.getenv("BOT_TOKEN")  # Читаем токен из переменной окружения
-CHAT_ID = os.getenv("CHAT_ID")  # Читаем ID чата
+# ✅ Вписали токен и ID чата напрямую
+TOKEN = "7694671048:AAGKtL9DRneqCv-2nk48eNwAkZSYKHNitBU"
+CHAT_ID = "864066537"
+
 bot = telegram.Bot(token=TOKEN)
 
 app = Flask(__name__)
@@ -20,12 +21,19 @@ def book_date():
     global booked_dates
     data = request.json
     date = data.get("date")
+    name = data.get("name")
+
+    if not date or not name:
+        return jsonify({"status": "error", "message": "Дата и имя обязательны!"}), 400
 
     if date in booked_dates:
         return jsonify({"status": "error", "message": "Дата уже занята"}), 400
 
     booked_dates.append(date)
-    bot.send_message(CHAT_ID, f"📅 Новая бронь: {date}\nИмя: {data['name']}")
+
+    # ✅ Исправлено! Теперь бот отправляет сообщение в Telegram
+    message = f"📅 Новая бронь:\nДата: {date}\nИмя: {name}"
+    bot.send_message(chat_id=CHAT_ID, text=message)
 
     return jsonify({"status": "success"})
 
